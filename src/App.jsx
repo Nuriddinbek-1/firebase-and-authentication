@@ -2,11 +2,14 @@
 import { useState } from "react";
 
 // Firebase
-import { collection, addDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase/config";
+import { collection, addDoc } from "firebase/firestore";
 
 // Custom hook
 import { useCollection } from "./hooks/useCollection";
+
+// Components
+import Transaction from "./components/Transaction";
 
 function App() {
   const [title, setTitle] = useState(null);
@@ -25,10 +28,6 @@ function App() {
     setTitle(null);
     setPrice(null);
     e.target.reset();
-  };
-
-  const deleteDocument = async (id) => {
-    await deleteDoc(doc(db, "transactions", id));
   };
 
   return (
@@ -59,15 +58,9 @@ function App() {
       </form>
       <ul>
         {transactions &&
-          transactions.map((item) => {
+          transactions.map((transaction) => {
             return (
-              <li
-                key={item.id}
-                style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-                <h3>{item.title} :</h3>
-                <h3>${item.price}</h3>
-                <button onClick={() => deleteDocument(item.id)}>delete</button>
-              </li>
+              <Transaction key={transactions.id} transaction={transaction} />
             );
           })}
       </ul>
