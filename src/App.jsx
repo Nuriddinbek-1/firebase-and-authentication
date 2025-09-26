@@ -1,9 +1,9 @@
 // React
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Firebase
 import { db } from "./firebase/config";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 
 // Custom hook
 import { useCollection } from "./hooks/useCollection";
@@ -12,11 +12,14 @@ import { useCollection } from "./hooks/useCollection";
 import Transaction from "./components/Transaction";
 
 function App() {
-  const [title, setTitle] = useState(null);
-  const [price, setPrice] = useState(null);
+  const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
+
+  const [editID, setEditID] = useState(null);
 
   const { data: transactions } = useCollection("transactions");
 
+  // Add new doc
   const addNewDoc = (e) => {
     e.preventDefault();
     addDoc(collection(db, "transactions"), {
@@ -25,10 +28,25 @@ function App() {
     })
       .then((res) => console.log(res))
       .catch(() => alert("Oops, something went wrong!!!"));
-    setTitle(null);
-    setPrice(null);
+    setTitle("");
+    setPrice("");
     e.target.reset();
   };
+
+  // Edit doc
+  const handleEdit = (transaction) => {
+    setEditID(transaction.id);
+    setTitle(transaction.title);
+    setPrice(transaction.price);
+  };
+
+  // Cancel editing
+  useEffect(() => {
+    if (!editID) {
+      setTitle("");
+      setPrice("");
+    }
+  }, [editID]);
 
   return (
     <div>
@@ -38,8 +56,7 @@ function App() {
           <span>Title</span>
           <input
             type="text"
-            name=""
-            id=""
+            value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
           />
@@ -48,19 +65,24 @@ function App() {
           <span>Price</span>
           <input
             type="number"
-            name=""
-            id=""
+            value={price}
             onChange={(e) => setPrice(e.target.value)}
             required
           />
         </label>
-        <button>Add</button>
+        {editID ? <button>Save Changes</button> : <button>Add</button>}
       </form>
       <ul>
         {transactions &&
           transactions.map((transaction) => {
             return (
-              <Transaction key={transactions.id} transaction={transaction} />
+              <Transaction
+                key={transaction.id}
+                transaction={transaction}
+                editID={editID}
+                handleEdit={handleEdit}
+                cancelEditing={() => setEditID(null)}
+              />
             );
           })}
       </ul>
