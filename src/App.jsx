@@ -22,6 +22,23 @@ function App() {
   // Add new doc
   const addNewDoc = (e) => {
     e.preventDefault();
+
+    // Update doc
+    if (editID) {
+      const transactionRef = doc(db, "transactions", editID);
+      updateDoc(transactionRef, {
+        title,
+        price: Number(price),
+      })
+        .then(() => {
+          setEditID(null);
+          console.log("Successfully updated");
+        })
+        .catch((error) => console.log(error));
+      return;
+    }
+
+    // Add new doc
     addDoc(collection(db, "transactions"), {
       title: title,
       price: Number(price),
